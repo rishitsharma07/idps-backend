@@ -3,9 +3,11 @@ package com.idps.backend.service;
 import com.idps.backend.dto.ClassificationResponse;
 import com.idps.backend.dto.TrafficIngestRequest;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
+import java.net.http.HttpClient;
 import java.util.Map;
 
 @Service
@@ -14,7 +16,13 @@ public class MlClassificationService {
     private final RestClient restClient;
 
     public MlClassificationService(@Value("${idps.ml-service.base-url}") String baseUrl) {
-        this.restClient = RestClient.builder().baseUrl(baseUrl).build();
+        HttpClient httpClient = HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_1_1)
+                .build();
+        this.restClient = RestClient.builder()
+                .baseUrl(baseUrl)
+                .requestFactory(new JdkClientHttpRequestFactory(httpClient))
+                .build();
     }
 
     public ClassificationResponse classify(TrafficIngestRequest req) {
